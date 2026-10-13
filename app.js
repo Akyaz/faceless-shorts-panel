@@ -1,4 +1,4 @@
-import { ApiError, WORKFLOWS, createClient } from "./api.js";
+import { ApiError, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
 
 const STORAGE_KEY = "faceless-shorts-panel";
 const MODES = {
@@ -16,6 +16,7 @@ const REFRESH_MS = 30000;
 const $ = (id) => document.getElementById(id);
 let client = null;
 let refreshTimer = null;
+let privacy = "public"; // yeniden yükleme de güncel görünürlük ayarıyla yapılır
 
 // ---------- ayarlar
 
@@ -124,9 +125,26 @@ function renderFeed(feed) {
       const failed = element("div", "video");
       failed.append(element("span", "badge bad", "başarısız"), link("kaydı aç", entry.link));
       item.append(failed);
+      // Video üretilmiş ama yüklenememişse (çoğunlukla YouTube'un günlük sınırı) dosyası duruyor demektir
+      if (entry.videos.some((video) => !video.url)) item.append(reuploadButton(entry));
     }
     list.append(item);
   }
+}
+
+function reuploadButton(entry) {
+  const button = element("button", "small", "Yeniden yükle");
+  button.type = "button";
+  button.addEventListener("click", () => {
+    const pending = entry.videos.filter((video) => !video.url).length;
+    if (!confirm(`${pending} video şimdi kanala yüklensin mi? YouTube'un günlük sınırı doluysa yine reddedilir.`)) return;
+    guarded(button, async () => {
+      await client.dispatch(REUPLOAD_WORKFLOW, { run_id: entry.run, privacy });
+      toast("Yükleme başlatıldı. Bir iki dakika içinde sonucu burada görünür.");
+      setTimeout(refresh, 6000);
+    });
+  });
+  return button;
 }
 
 function renderRuns(runs) {
@@ -149,7 +167,7 @@ async function refresh() {
   if (!client) return;
   clearTimeout(refreshTimer);
   try {
-    const [workflow, privacy, runs, feed] = await Promise.all([
+    const [workflow, currentPrivacy, runs, feed] = await Promise.all([
       client.workflow(WORKFLOWS.short),
       client.privacy(),
       client.runs(),
@@ -159,6 +177,7 @@ async function refresh() {
     $("auto-state").textContent = enabled ? "Açık" : "Durduruldu";
     $("auto-toggle").textContent = enabled ? "Durdur" : "Başlat";
     $("auto-toggle").dataset.enabled = enabled;
+    privacy = currentPrivacy;
     const isPublic = privacy === "public";
     $("privacy-state").textContent = isPublic ? "Herkese açık" : "Gizli";
     $("privacy-toggle").textContent = isPublic ? "Gizliye çevir" : "Herkese aç";

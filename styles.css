@@ -149,6 +149,12 @@ button.ghost {
   color: #fff;
 }
 
+button.small {
+  min-height: 36px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
 #weekly-button {
   width: 100%;
 }

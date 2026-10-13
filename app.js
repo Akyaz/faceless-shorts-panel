@@ -6,6 +6,7 @@ const MODES = {
   world: "Dünya haberi (İngilizce)",
   trend: "Trend (bilim ve teknoloji)",
   digest: "Günün özeti",
+  morning: "Sabah özeti",
   sports: "Spor gündemi",
   ucl: "Şampiyonlar Ligi maç programı",
   custom: "Özel metin",

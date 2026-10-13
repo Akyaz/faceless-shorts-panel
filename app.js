@@ -43,13 +43,15 @@ function toast(text) {
   box.textContent = text;
   box.hidden = false;
   clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => (box.hidden = true), 5000);
+  toast.timer = setTimeout(() => (box.hidden = true), 9000);
 }
 
 function explain(error) {
   if (error instanceof ApiError) {
     if (error.status === 401) return "Erişim anahtarı geçersiz ya da süresi dolmuş.";
-    if (error.status === 403) return "Anahtarın bu işlem için izni yok.";
+    if (error.status === 403) {
+      return "Anahtarın bu işlem için izni yok. GitHub'da anahtarın izinlerinde Actions ve Variables \"Read and write\" olmalı.";
+    }
     if (error.status === 404) return "Depo bulunamadı ya da anahtar bu depoyu göremiyor.";
     return `GitHub hatası (${error.status}): ${error.message}`;
   }

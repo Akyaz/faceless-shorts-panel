@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09183a">
+  <meta name="robots" content="noindex">
+  <title>Shorts Paneli</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon-192.png" alt="" width="36" height="36">
+    <h1>Shorts Paneli</h1>
+    <button id="refresh" class="ghost" type="button">Yenile</button>
+  </header>
+
+  <main>
+    <section id="view-status" hidden>
+      <div class="card row">
+        <div>
+          <div class="label">Otomatik yayın</div>
+          <div class="value" id="auto-state">…</div>
+        </div>
+        <button id="auto-toggle" type="button">…</button>
+      </div>
+      <div class="card row">
+        <div>
+          <div class="label">Yeni videoların görünürlüğü</div>
+          <div class="value" id="privacy-state">…</div>
+        </div>
+        <button id="privacy-toggle" type="button">…</button>
+      </div>
+
+      <h2>Son videolar</h2>
+      <ul id="feed" class="list"></ul>
+
+      <h2>Son çalışmalar</h2>
+      <ul id="runs" class="list"></ul>
+      <p class="hint" id="updated"></p>
+    </section>
+
+    <section id="view-produce" hidden>
+      <form id="produce-form" class="card">
+        <label for="mode">Video türü</label>
+        <select id="mode">
+          <option value="story">Gündem haberi</option>
+          <option value="world">Dünya haberi (İngilizce)</option>
+          <option value="trend">Trend (bilim ve teknoloji)</option>
+          <option value="digest">Günün özeti</option>
+          <option value="sports">Spor gündemi</option>
+          <option value="ucl">Şampiyonlar Ligi maç programı</option>
+        </select>
+
+        <label for="count">Adet</label>
+        <select id="count">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+        </select>
+
+        <label class="check">
+          <input id="upload" type="checkbox" checked>
+          <span>Üretilince kanala yükle</span>
+        </label>
+
+        <button id="produce-button" class="primary" type="submit">Üret</button>
+      </form>
+
+      <div class="card">
+        <p>Son 7 günün haberlerinden yatay, uzun bir derleme videosu.</p>
+        <button id="weekly-button" type="button">Haftalık derlemeyi üret</button>
+      </div>
+    </section>
+
+    <section id="view-settings" hidden>
+      <form id="settings-form" class="card">
+        <label for="repo">Depo (sahip/ad)</label>
+        <input id="repo" type="text" placeholder="kullanici/faceless-shorts" autocapitalize="none" autocomplete="off" spellcheck="false">
+
+        <label for="token">GitHub erişim anahtarı</label>
+        <input id="token" type="password" placeholder="github_pat_…" autocomplete="off">
+        <p class="hint">Anahtar yalnızca bu cihazda saklanır ve yalnızca GitHub'a gönderilir. Gerekli izinler: Actions (okuma ve yazma), Variables (okuma ve yazma), Contents (okuma).</p>
+
+        <button id="settings-save" class="primary" type="submit">Kaydet ve bağlan</button>
+      </form>
+      <div class="card">
+        <button id="sign-out" class="danger" type="button">Anahtarı bu cihazdan sil</button>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button id="tab-status" type="button">Durum</button>
+    <button id="tab-produce" type="button">Üret</button>
+    <button id="tab-settings" type="button">Ayarlar</button>
+  </nav>
+
+  <div id="toast" role="status" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

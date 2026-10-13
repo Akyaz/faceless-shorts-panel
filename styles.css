@@ -1,0 +1,299 @@
+:root {
+  --bg: #f3f5f9;
+  --card: #ffffff;
+  --text: #121a2b;
+  --muted: #5d6880;
+  --line: #dde2ec;
+  --accent: #1e88e5;
+  --accent-text: #ffffff;
+  --header: #09183a;
+  --ok: #2e9e4f;
+  --bad: #d93a36;
+  --busy: #f0a020;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --card: #151f33;
+    --text: #e8ecf5;
+    --muted: #97a3bd;
+    --line: #26324a;
+    --header: #060d1e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--header);
+  color: #fff;
+}
+
+header img {
+  border-radius: 50%;
+}
+
+header h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px calc(84px + env(safe-area-inset-bottom));
+}
+
+h2 {
+  margin: 22px 4px 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.card {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.card.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card p {
+  margin: 0 0 12px;
+}
+
+.label,
+.meta,
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 8px 4px;
+}
+
+button,
+select,
+input[type="text"],
+input[type="password"] {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+button.primary {
+  width: 100%;
+  margin-top: 16px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+button.danger {
+  width: 100%;
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+button.ghost {
+  min-height: 36px;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+}
+
+#weekly-button {
+  width: 100%;
+}
+
+form label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+form label:first-child {
+  margin-top: 0;
+}
+
+select,
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-weight: 400;
+}
+
+label.check input {
+  width: 22px;
+  height: 22px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.list li {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+}
+
+.list li:first-child {
+  border-top: 0;
+}
+
+.list li.empty {
+  color: var(--muted);
+}
+
+.list a {
+  color: var(--accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.video {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.run {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot.ok {
+  background: var(--ok);
+}
+
+.dot.bad {
+  background: var(--bad);
+}
+
+.dot.busy {
+  background: var(--busy);
+}
+
+.badge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.badge.bad {
+  background: var(--bad);
+  color: #fff;
+}
+
+nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--card);
+  border-top: 1px solid var(--line);
+}
+
+nav button {
+  flex: 1;
+  min-height: 56px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+nav button.active {
+  color: var(--accent);
+}
+
+#toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 3;
+  max-width: 608px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #1b2437;
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}

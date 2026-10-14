@@ -77,6 +77,64 @@
       </div>
     </section>
 
+    <section id="view-script" hidden>
+      <form id="script-form" class="card">
+        <p class="hint">Metni sen yazarsın; görseller ülke ve şehre göre bulunur, seslendirme ve müzik eklenir. Her bilgi aşağıdaki kaynak başlıklarında geçmeli.</p>
+
+        <label for="s-lang">Dil</label>
+        <select id="s-lang">
+          <option value="tr">Türkçe</option>
+          <option value="en">İngilizce</option>
+        </select>
+
+        <label for="s-title">YouTube başlığı</label>
+        <input id="s-title" type="text" maxlength="100" required>
+
+        <label for="s-hook">Ekrandaki başlık (en fazla 5–6 kelime)</label>
+        <input id="s-hook" type="text" maxlength="60">
+
+        <label for="s-label">Ekran etiketi</label>
+        <input id="s-label" type="text" maxlength="20" placeholder="GÜNDEM">
+
+        <label for="s-text">Metin</label>
+        <textarea id="s-text" rows="9" required placeholder="Her paragraf ayrı satıra. İlk satır kanca, son satır izleyiciye soru."></textarea>
+        <p class="hint" id="s-count"></p>
+
+        <label for="s-sources">Kaynak başlıklar</label>
+        <textarea id="s-sources" rows="4" required placeholder="Haber başlığı | Yayın adı&#10;Başka bir başlık | Başka yayın"></textarea>
+
+        <label for="s-country">Haberin geçtiği ülke (İngilizce)</label>
+        <input id="s-country" type="text" placeholder="Turkey">
+
+        <label for="s-city">Şehir (varsa)</label>
+        <input id="s-city" type="text" placeholder="Istanbul">
+
+        <label for="s-queries">Görsel aramaları (İngilizce, virgülle; yer adı yazma)</label>
+        <input id="s-queries" type="text" placeholder="school building, classroom">
+
+        <label for="s-object">Nesne görseli (isteğe bağlı)</label>
+        <input id="s-object" type="text" placeholder="banknotes">
+
+        <label for="s-mood">Müzik</label>
+        <select id="s-mood">
+          <option value="notr">Nötr</option>
+          <option value="umutlu">Umutlu</option>
+          <option value="gergin">Gergin</option>
+          <option value="huzunlu">Hüzünlü</option>
+        </select>
+
+        <label for="s-tags">Etiketler (virgülle)</label>
+        <input id="s-tags" type="text" placeholder="ekonomi, emekli">
+
+        <label class="check">
+          <input id="s-upload" type="checkbox" checked>
+          <span>Üretilince kanala yükle</span>
+        </label>
+
+        <button id="script-button" class="primary" type="submit">Videoyu üret</button>
+      </form>
+    </section>
+
     <section id="view-settings" hidden>
       <form id="settings-form" class="card">
         <label for="repo">Depo (sahip/ad)</label>
@@ -97,6 +155,7 @@
   <nav>
     <button id="tab-status" type="button">Durum</button>
     <button id="tab-produce" type="button">Üret</button>
+    <button id="tab-script" type="button">Metin</button>
     <button id="tab-settings" type="button">Ayarlar</button>
   </nav>
 

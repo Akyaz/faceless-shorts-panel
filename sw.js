@@ -1,5 +1,5 @@
 // Uygulama kabuğunu saklar ki panel ana ekrandan anında açılsın. GitHub'a giden istekler hiçbir zaman saklanmaz.
-const CACHE = "panel-v3";
+const CACHE = "panel-v4";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "api.js", "manifest.webmanifest", "icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {

@@ -6,6 +6,7 @@
 
 - **Durum:** Son üretilen videolar ve YouTube bağlantıları, son çalışmaların başarılı ya da başarısız olduğu.
 - **Üret:** Tür ve adet seçip video üretimini başlatır; haftalık derlemeyi başlatır.
+- **Metin:** Kendi yazdığın metinden video üretir (başlık, paragraflar, kaynak başlıklar, ülke ve görsel aramaları). Yazdıkların taslak olarak cihazda saklanır.
 - **Yeniden yükle:** Üretilmiş ama yüklenememiş videoları (örneğin YouTube'un günlük sınırına takılanları) tek dokunuşla yeniden yükler.
 - **Anahtarlar:** Otomatik yayını durdurur ve başlatır; yeni videoların herkese açık ya da gizli yüklenmesini seçer.
 
@@ -38,7 +39,7 @@ Yerelde denemek için: `python3 -m http.server 8791` ve `http://127.0.0.1:8791/`
 
 Panel, faceless-shorts deposunda şunlara dayanır:
 
-- `make-short.yml` iş akışının `mode`, `count` ve `upload` girdileri; `weekly.yml` iş akışının `upload` girdisi
+- `make-short.yml` iş akışının `mode`, `count`, `upload` ve `script_json` girdileri; `weekly.yml` iş akışının `upload` girdisi
 - `upload-video.yml` iş akışının `run_id` ve `privacy` girdileri
 - `YT_PRIVACY` depo değişkeni (`public` ya da `private`)
 - `panel-data` dalındaki `feed.json`: her çalışmanın sonunda `pipeline/report.py` tarafından eklenen kayıt

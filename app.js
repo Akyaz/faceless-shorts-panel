@@ -13,6 +13,9 @@ const MODES = {
   weekly: "Haftalık derleme",
 };
 const REFRESH_MS = 30000;
+const VIEWS = ["status", "produce", "script", "settings"];
+const DRAFT_KEY = "faceless-shorts-panel-draft";
+const SCRIPT_FIELDS = ["lang", "title", "hook", "label", "text", "sources", "country", "city", "queries", "object", "mood", "tags"];
 
 const $ = (id) => document.getElementById(id);
 let client = null;
@@ -99,7 +102,7 @@ async function guarded(button, action) {
 // ---------- ekranlar
 
 function show(view) {
-  for (const name of ["status", "produce", "settings"]) {
+  for (const name of VIEWS) {
     $(`view-${name}`).hidden = name !== view;
     $(`tab-${name}`).classList.toggle("active", name === view);
   }
@@ -196,7 +199,7 @@ async function refresh() {
 // ---------- eylemler
 
 function bind() {
-  for (const name of ["status", "produce", "settings"]) {
+  for (const name of VIEWS) {
     $(`tab-${name}`).addEventListener("click", () => show(name));
   }
   $("refresh").addEventListener("click", (event) => guarded(event.currentTarget, refresh));
@@ -249,6 +252,8 @@ function bind() {
     });
   });
 
+  bindScript();
+
   $("settings-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const [owner, repo] = $("repo").value.trim().split("/");
@@ -280,6 +285,82 @@ function bind() {
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refresh();
+  });
+}
+
+// ---------- kendi metninle video
+
+const split = (value) => value.split(",").map((part) => part.trim()).filter(Boolean);
+
+function readScript() {
+  const value = (name) => $(`s-${name}`).value.trim();
+  const paragraphs = value("text").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const sources = value("sources")
+    .split(/\n+/)
+    .map((line) => line.split("|").map((part) => part.trim()))
+    .filter(([title]) => title)
+    .map(([title, source = ""]) => ({ title, source }));
+  const english = value("lang") === "en";
+  return {
+    lang: value("lang"),
+    title: value("title"),
+    hook_title: value("hook"),
+    label: value("label") || (english ? "NEWS" : "GÜNDEM"),
+    paragraphs,
+    sources,
+    country: value("country"),
+    city: value("city"),
+    image_queries: split(value("queries")),
+    object_query: value("object"),
+    mood: value("mood"),
+    hashtags: split(value("tags")),
+  };
+}
+
+function saveDraft() {
+  try {
+    const draft = Object.fromEntries(SCRIPT_FIELDS.map((name) => [name, $(`s-${name}`).value]));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // taslak saklanamazsa form yine çalışır
+  }
+}
+
+function countWords() {
+  const words = $("s-text").value.split(/\s+/).filter(Boolean).length;
+  // Konuşma hızıyla yaklaşık süre: dakikada 160 kelime
+  $("s-count").textContent = words ? `${words} kelime, yaklaşık ${Math.round((words / 160) * 60)} saniye` : "";
+}
+
+function bindScript() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY)) || {};
+    for (const name of SCRIPT_FIELDS) if (draft[name] !== undefined) $(`s-${name}`).value = draft[name];
+  } catch {
+    // taslak yoksa boş form
+  }
+  countWords();
+  $("script-form").addEventListener("input", () => {
+    saveDraft();
+    countWords();
+  });
+
+  $("script-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const item = readScript();
+    if (item.paragraphs.length < 2) return toast("Metin en az iki paragraf olmalı (her paragraf ayrı satırda).");
+    if (!item.sources.length) return toast("En az bir kaynak başlık yaz: Başlık | Yayın adı");
+    if (!item.image_queries.length && !item.country && !item.object_query) {
+      return toast("Görsel bulunabilmesi için ülke ya da görsel araması gir.");
+    }
+    const upload = $("s-upload").checked;
+    if (!confirm(upload ? "Video üretilip kanala yüklenecek. Onaylıyor musun?" : "Video üretilsin mi?")) return;
+    guarded($("script-button"), async () => {
+      await client.dispatch(WORKFLOWS.short, { script_json: JSON.stringify([item]), upload });
+      toast("Üretim başlatıldı; birkaç dakika içinde Durum ekranında görünür.");
+      show("status");
+      setTimeout(refresh, 4000);
+    });
   });
 }
 

@@ -115,6 +115,9 @@ function renderFeed(feed) {
     list.append(element("li", "empty", "Henüz kayıt yok. İlk video üretildiğinde burada görünecek."));
     return;
   }
+  const uploaded = new Set(
+    feed.filter((e) => e.videos.length && e.videos.every((video) => video.url)).map((e) => String(e.run)),
+  );
   for (const entry of feed.slice(-15).reverse()) {
     const item = element("li");
     const head = element("div", "meta", `${when(entry.time)} · ${MODES[entry.mode] || entry.mode}`);
@@ -129,15 +132,18 @@ function renderFeed(feed) {
       const failed = element("div", "video");
       failed.append(element("span", "badge bad", "başarısız"), link("kaydı aç", entry.link));
       item.append(failed);
-      // Video üretilmiş ama yüklenememişse (çoğunlukla YouTube'un günlük sınırı) dosyası duruyor demektir
-      if (entry.videos.some((video) => !video.url)) item.append(reuploadButton(entry));
+    }
+    // Video üretilmiş ama yüklenmemişse (YouTube'un günlük sınırı ya da bilerek yüklemeden üretilmiş) dosyası
+    // duruyor demektir; aynı çalışma sonradan yüklendiyse düğme gösterilmez
+    if (entry.videos.some((video) => !video.url) && !uploaded.has(String(entry.run))) {
+      item.append(reuploadButton(entry));
     }
     list.append(item);
   }
 }
 
 function reuploadButton(entry) {
-  const button = element("button", "small", "Yeniden yükle");
+  const button = element("button", "small", "Kanala yükle");
   button.type = "button";
   button.addEventListener("click", () => {
     const pending = entry.videos.filter((video) => !video.url).length;

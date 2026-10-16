@@ -166,7 +166,8 @@ button.small {
   font-size: 14px;
 }
 
-#weekly-button {
+#weekly-button,
+#longform-button {
   width: 100%;
 }
 

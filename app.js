@@ -1,4 +1,4 @@
-import { ApiError, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
+import { ApiError, LONGFORM_WORKFLOW, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
 
 const STORAGE_KEY = "faceless-shorts-panel";
 const MODES = {
@@ -11,6 +11,8 @@ const MODES = {
   ucl: "Şampiyonlar Ligi maç programı",
   custom: "Özel metin",
   weekly: "Haftalık derleme",
+  longform: "Tarih videosu",
+  retry: "Yeniden yükleme",
 };
 const REFRESH_MS = 30000;
 const VIEWS = ["status", "produce", "script", "settings"];
@@ -143,14 +145,20 @@ function renderFeed(feed) {
 }
 
 function reuploadButton(entry) {
-  const button = element("button", "small", "Kanala yükle");
+  // Tarih videolarının dosyası saklanmaz; metinden yeniden üretilip yüklenir (yaklaşık 20 dakika)
+  const longform = entry.mode === "longform" && entry.script;
+  const button = element("button", "small", longform ? "Yeniden üret ve yükle" : "Kanala yükle");
   button.type = "button";
   button.addEventListener("click", () => {
     const pending = entry.videos.filter((video) => !video.url).length;
-    if (!confirm(`${pending} video şimdi kanala yüklensin mi? YouTube'un günlük sınırı doluysa yine reddedilir.`)) return;
+    const question = longform
+      ? "Tarih videosu yeniden üretilip kanala yüklensin mi? Yaklaşık 20 dakika sürer; YouTube'un günlük sınırı doluysa yine reddedilir."
+      : `${pending} video şimdi kanala yüklensin mi? YouTube'un günlük sınırı doluysa yine reddedilir.`;
+    if (!confirm(question)) return;
     guarded(button, async () => {
-      await client.dispatch(REUPLOAD_WORKFLOW, { run_id: entry.run, privacy });
-      toast("Yükleme başlatıldı. Bir iki dakika içinde sonucu burada görünür.");
+      if (longform) await client.dispatch(LONGFORM_WORKFLOW, { script: entry.script, upload: true });
+      else await client.dispatch(REUPLOAD_WORKFLOW, { run_id: entry.run, privacy });
+      toast(longform ? "Üretim başlatıldı; yaklaşık 20 dakika sürer." : "Yükleme başlatıldı. Bir iki dakika içinde sonucu burada görünür.");
       setTimeout(refresh, 6000);
     });
   });
@@ -259,6 +267,17 @@ function bind() {
   });
 
   bindScript();
+
+  $("longform-button").addEventListener("click", (event) => {
+    const upload = $("upload").checked;
+    if (!confirm(`Sıradaki tarih videosu üretilsin mi?${upload ? " Bitince kanala yüklenecek." : ""} Yaklaşık 20 dakika sürer.`)) return;
+    guarded(event.currentTarget, async () => {
+      await client.dispatch(LONGFORM_WORKFLOW, { upload });
+      toast("Tarih videosu başlatıldı; yaklaşık 20 dakika sürer.");
+      show("status");
+      setTimeout(refresh, 4000);
+    });
+  });
 
   $("settings-form").addEventListener("submit", (event) => {
     event.preventDefault();

@@ -4,6 +4,7 @@
 const API = "https://api.github.com";
 export const WORKFLOWS = { short: "make-short.yml", weekly: "weekly.yml" };
 export const REUPLOAD_WORKFLOW = "upload-video.yml"; // üretilmiş ama yüklenememiş videoları yeniden yükler
+export const LONGFORM_WORKFLOW = "longform.yml"; // tarih videoları: dosyası saklanmaz, yeniden üretilir
 const PRIVACY_VARIABLE = "YT_PRIVACY";
 const FEED_BRANCH = "panel-data";
 

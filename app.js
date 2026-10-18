@@ -8,6 +8,7 @@ const MODES = {
   digest: "Günün özeti",
   morning: "Sabah özeti",
   sports: "Spor gündemi",
+  debate: "Sen ne dersin? (tartışma)",
   ucl: "Şampiyonlar Ligi maç programı",
   custom: "Özel metin",
   weekly: "Haftalık derleme",

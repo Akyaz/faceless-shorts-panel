@@ -9,6 +9,7 @@ const MODES = {
   morning: "Sabah özeti",
   sports: "Spor gündemi",
   debate: "Sen ne dersin? (tartışma)",
+  onthisday: "On This Day (İngilizce)",
   ucl: "Şampiyonlar Ligi maç programı",
   custom: "Özel metin",
   weekly: "Haftalık derleme",

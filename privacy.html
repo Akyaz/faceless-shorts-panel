@@ -27,9 +27,15 @@
   videos to that channel. It is not offered to other users.</p>
 
   <h2>Google user data we access</h2>
-  <p>The app requests a single permission: <code>https://www.googleapis.com/auth/youtube.upload</code>.
-  It is used only to upload videos, with their title, description and tags, to the owner's own YouTube channel.
-  The app does not read, modify or delete any other YouTube or Google account data.</p>
+  <p>The app requests two permissions:</p>
+  <ul>
+    <li><code>https://www.googleapis.com/auth/youtube.upload</code>: to upload videos, with their title,
+    description and tags, to the owner's own YouTube channel.</li>
+    <li><code>https://www.googleapis.com/auth/youtube.force-ssl</code>: only to post one comment, as the channel,
+    under each video the app has just uploaded (the question asked in the video).</li>
+  </ul>
+  <p>The app does not read, modify or delete any other YouTube or Google account data, and does not read
+  viewers' comments.</p>
 
   <h2>How data is stored</h2>
   <p>The OAuth refresh token is stored as an encrypted secret in the owner's private build environment

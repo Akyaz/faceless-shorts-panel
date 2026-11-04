@@ -455,6 +455,19 @@ function bindScript() {
     countWords();
   });
 
+  // Önceki videonun bilgileri taslakta kalır; yeni video için hepsi tek dokunuşla boşaltılır
+  $("script-clear").addEventListener("click", () => {
+    if (!confirm("Formdaki bütün bilgiler silinsin mi?")) return;
+    $("script-form").reset(); // alanlar sayfadaki varsayılanlara döner (Türkçe, Nötr, yükleme açık)
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // taslak zaten saklanamıyorsa silinecek bir şey yok
+    }
+    countWords();
+    $("s-title").focus();
+  });
+
   $("script-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const item = readScript();

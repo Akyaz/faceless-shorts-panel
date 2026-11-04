@@ -1,4 +1,4 @@
-import { ApiError, LONGFORM_WORKFLOW, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
+import { ApiError, LONGFORM_WORKFLOW, PLAN, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
 
 const STORAGE_KEY = "faceless-shorts-panel";
 const MODES = {
@@ -11,13 +11,18 @@ const MODES = {
   debate: "Sen ne dersin? (tartışma)",
   onthisday: "On This Day (İngilizce)",
   ucl: "Şampiyonlar Ligi maç programı",
+  fact: "Biliyor muydun?",
+  culture: "Magazin ve kültür-sanat",
+  matchday: "Maç programı",
+  sportstory: "Spor haberi",
+  scheduled: "Önceden hazırlanmış video",
   custom: "Özel metin",
   weekly: "Haftalık derleme",
   longform: "Tarih videosu",
   retry: "Yeniden yükleme",
 };
 const REFRESH_MS = 30000;
-const VIEWS = ["status", "produce", "script", "settings"];
+const VIEWS = ["status", "plan", "produce", "script", "settings"];
 const DRAFT_KEY = "faceless-shorts-panel-draft";
 const SCRIPT_FIELDS = ["lang", "title", "hook", "label", "text", "sources", "country", "city", "queries", "object", "mood", "tags"];
 
@@ -183,15 +188,92 @@ function renderRuns(runs) {
   return runs.some((run) => run.status !== "completed");
 }
 
+// ---------- günlük plan
+
+// Türkiye saati sabit UTC+3 (pipeline/slots.py da böyle hesaplar)
+const turkeyNow = () => new Date(Date.now() + 3 * 3600 * 1000);
+
+function renderPlan(feed, runs, scheduledFiles) {
+  const now = turkeyNow();
+  const day = now.toISOString().slice(0, 10);
+  // Pipeline "bugün zaten üretildi mi" kararını UTC tarihine göre verir; durum da aynı kurala bakar
+  const utcDay = new Date().toISOString().slice(0, 10);
+  const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const files = new Set(scheduledFiles);
+  $("plan-day").textContent = `Bugün · ${now.toLocaleDateString("tr-TR", { timeZone: "UTC", day: "numeric", month: "long", weekday: "long" })}`;
+
+  const list = $("plan");
+  list.replaceChildren();
+  for (const item of PLAN) {
+    if (item.sunday && now.getUTCDay() !== 0) continue;
+    const stem = `${day}-${item.time.replace(":", "")}`;
+    // 13:00 yalnızca o güne önceden hazırlanmış video varsa çalışır
+    if (item.prepared && !files.has(`${stem}.json`)) continue;
+    const [hour, minute] = item.time.split(":").map(Number);
+    const entries = feed.filter((e) => e.slot === item.slot && String(e.time).startsWith(utcDay));
+    const done = entries.find((e) => e.status === "success" && e.videos.length);
+    const empty = entries.find((e) => e.status === "success" && !e.videos.length);
+    const busy = runs.some((run) => run.status !== "completed" && run.path?.endsWith(item.file));
+
+    let state, label;
+    if (done) [state, label] = ["ok", `çıktı · ${when(done.time)}`];
+    else if (files.has(`${stem}.skip`)) [state, label] = ["off", "bugün iptal"];
+    else if (empty) [state, label] = ["off", item.mode === "matchday" ? "bugün maç yok" : "video çıkmadı"];
+    else if (entries.length) [state, label] = ["bad", "başarısız"];
+    else if (minutes < hour * 60 + minute) [state, label] = ["wait", "bekliyor"];
+    else if (busy) [state, label] = ["busy", "üretiliyor olabilir"];
+    else [state, label] = ["late", "kaçtı"];
+
+    const row = element("li", "slot");
+    const head = element("div", "run");
+    head.append(element("span", `dot ${state}`), element("strong", null, item.time),
+      element("span", null, MODES[item.mode] || item.mode));
+    row.append(head, element("div", "meta", label));
+    for (const video of done ? done.videos : []) {
+      const line = element("div", "video");
+      line.append(video.url ? link(video.title, video.url) : element("span", null, video.title));
+      if (!video.url) line.append(element("span", "badge", "yüklenmedi"));
+      row.append(line);
+    }
+    const failed = entries.find((e) => e.status !== "success");
+    if (failed && failed.videos.some((video) => !video.url)) row.append(reuploadButton(failed));
+    else if (!done && state !== "off") row.append(slotButton(item, state, stem));
+    list.append(row);
+  }
+}
+
+function slotButton(item, state, stem) {
+  const button = element("button", "small", "Şimdi üret");
+  button.type = "button";
+  button.addEventListener("click", () => {
+    const early = state === "wait" ? ` Saati henüz gelmedi; video ${item.time} yerine şimdi çıkar.` : "";
+    if (!confirm(`${item.time} · ${MODES[item.mode]} şimdi üretilip kanala yüklensin mi?${early}`)) return;
+    guarded(button, async () => {
+      // Başarısız kaydı olan saat pipeline'da "bugün üretildi" sayılır; o zaman saat girdisi olmadan aynı tür üretilir
+      if (state === "bad") {
+        const inputs = item.prepared ? { script: `scripts/scheduled/${stem}.json`, upload: true }
+          : item.file === WORKFLOWS.short ? { mode: item.mode, upload: true } : { upload: true };
+        await client.dispatch(item.file, inputs);
+      } else {
+        await client.dispatch(item.file, { slot: item.slot });
+      }
+      toast(`${item.time} videosu başlatıldı. ${item.mode === "longform" ? "Yaklaşık 25" : "Yaklaşık 8"} dakika içinde çıkar.`);
+      setTimeout(refresh, 6000);
+    });
+  });
+  return button;
+}
+
 async function refresh() {
   if (!client) return;
   clearTimeout(refreshTimer);
   try {
-    const [workflow, currentPrivacy, runs, feed] = await Promise.all([
+    const [workflow, currentPrivacy, runs, feed, scheduledFiles] = await Promise.all([
       client.workflow(WORKFLOWS.short),
       client.privacy(),
       client.runs(),
       client.feed(),
+      client.scheduledFiles().catch(() => []), // okunamazsa plan iptalleri göstermeden çizilir
     ]);
     const enabled = workflow.state === "active";
     $("auto-state").textContent = enabled ? "Açık" : "Durduruldu";
@@ -203,6 +285,7 @@ async function refresh() {
     $("privacy-toggle").textContent = isPublic ? "Gizliye çevir" : "Herkese aç";
     $("privacy-toggle").dataset.public = isPublic;
     renderFeed(feed);
+    renderPlan(feed, runs, scheduledFiles);
     const busy = renderRuns(runs);
     $("updated").textContent = `Güncellendi: ${when(new Date().toISOString())}`;
     // Çalışan iş varken sık, yokken seyrek yenilenir

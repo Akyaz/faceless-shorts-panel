@@ -7,6 +7,21 @@ export const REUPLOAD_WORKFLOW = "upload-video.yml"; // üretilmiş ama yüklene
 export const LONGFORM_WORKFLOW = "longform.yml"; // tarih videoları: dosyası saklanmaz, yeniden üretilir
 const PRIVACY_VARIABLE = "YT_PRIVACY";
 const FEED_BRANCH = "panel-data";
+const SCHEDULED_DIR = "scripts/scheduled";
+
+// Günlük plan: pipeline/slots.py'deki saatlerle aynı olmalı. slot, iş akışının "slot" girdisine giden saat adıdır.
+export const PLAN = [
+  { time: "10:00", slot: "10:00", file: WORKFLOWS.short, mode: "story" },
+  { time: "11:00", slot: "pazar 11:00", file: WORKFLOWS.weekly, mode: "weekly", sunday: true },
+  { time: "12:00", slot: "12:00", file: WORKFLOWS.short, mode: "fact" },
+  { time: "13:00", slot: "13:00", file: WORKFLOWS.short, mode: "scheduled", prepared: true },
+  { time: "13:30", slot: "13:30", file: WORKFLOWS.short, mode: "matchday" },
+  { time: "15:00", slot: "15:00", file: WORKFLOWS.short, mode: "fact" },
+  { time: "17:00", slot: "17:00", file: WORKFLOWS.short, mode: "culture" },
+  { time: "19:00", slot: "19:00", file: WORKFLOWS.short, mode: "sportstory" },
+  { time: "20:30", slot: "20:30", file: WORKFLOWS.short, mode: "debate" },
+  { time: "21:00", slot: "21:00", file: LONGFORM_WORKFLOW, mode: "longform" },
+];
 
 export class ApiError extends Error {
   constructor(status, message) {
@@ -79,6 +94,16 @@ export function createClient({ owner, repo, token }) {
     async feed() {
       try {
         return JSON.parse(await request("GET", `${base}/contents/feed.json?ref=${FEED_BRANCH}`, { raw: true }));
+      } catch (error) {
+        if (error.status === 404) return [];
+        throw error;
+      }
+    },
+
+    // Önceden hazırlanmış videolar ve iptaller (scripts/scheduled/YYYY-AA-GG-SSDD.json / .skip); klasör yoksa boş
+    async scheduledFiles() {
+      try {
+        return (await request("GET", `${base}/contents/${SCHEDULED_DIR}`)).map((file) => file.name);
       } catch (error) {
         if (error.status === 404) return [];
         throw error;

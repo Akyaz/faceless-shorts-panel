@@ -259,8 +259,18 @@ label.check input {
   background: var(--bad);
 }
 
-.dot.busy {
+.dot.busy,
+.dot.late {
   background: var(--busy);
+}
+
+.dot.wait,
+.dot.off {
+  background: var(--line);
+}
+
+.slot .run strong {
+  font-variant-numeric: tabular-nums;
 }
 
 .badge {

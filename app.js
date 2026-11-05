@@ -192,12 +192,11 @@ function renderRuns(runs) {
 
 // Türkiye saati sabit UTC+3 (pipeline/slots.py da böyle hesaplar)
 const turkeyNow = () => new Date(Date.now() + 3 * 3600 * 1000);
+const turkeyDay = (iso) => new Date(new Date(iso).getTime() + 3 * 3600 * 1000).toISOString().slice(0, 10);
 
 function renderPlan(feed, runs, scheduledFiles) {
   const now = turkeyNow();
   const day = now.toISOString().slice(0, 10);
-  // Pipeline "bugün zaten üretildi mi" kararını UTC tarihine göre verir; durum da aynı kurala bakar
-  const utcDay = new Date().toISOString().slice(0, 10);
   const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   const files = new Set(scheduledFiles);
   $("plan-day").textContent = `Bugün · ${now.toLocaleDateString("tr-TR", { timeZone: "UTC", day: "numeric", month: "long", weekday: "long" })}`;
@@ -210,13 +209,17 @@ function renderPlan(feed, runs, scheduledFiles) {
     // 13:00 yalnızca o güne önceden hazırlanmış video varsa çalışır
     if (item.prepared && !files.has(`${stem}.json`)) continue;
     const [hour, minute] = item.time.split(":").map(Number);
-    const entries = feed.filter((e) => e.slot === item.slot && String(e.time).startsWith(utcDay));
-    const done = entries.find((e) => e.status === "success" && e.videos.length);
+    // pipeline/slots.py ile aynı kural: video çıkan ya da başarılı biten kayıt o saati kapatır, video çıkmadan
+    // düşen kayıt kapatmaz (yeniden denenir). Gün Türkiye saatiyle.
+    const entries = feed.filter((e) => e.slot === item.slot && turkeyDay(e.time) === day);
+    const done = entries.find((e) => e.videos.length);
     const empty = entries.find((e) => e.status === "success" && !e.videos.length);
     const busy = runs.some((run) => run.status !== "completed" && run.path?.endsWith(item.file));
 
     let state, label;
-    if (done) [state, label] = ["ok", `çıktı · ${when(done.time)}`];
+    const pending = done && done.videos.some((video) => !video.url);
+    if (pending) [state, label] = ["bad", "üretildi, yüklenemedi"];
+    else if (done) [state, label] = ["ok", `çıktı · ${when(done.time)}`];
     else if (files.has(`${stem}.skip`)) [state, label] = ["off", "bugün iptal"];
     else if (empty) [state, label] = ["off", item.mode === "matchday" ? "bugün maç yok" : "video çıkmadı"];
     else if (entries.length) [state, label] = ["bad", "başarısız"];
@@ -235,28 +238,20 @@ function renderPlan(feed, runs, scheduledFiles) {
       if (!video.url) line.append(element("span", "badge", "yüklenmedi"));
       row.append(line);
     }
-    const failed = entries.find((e) => e.status !== "success");
-    if (failed && failed.videos.some((video) => !video.url)) row.append(reuploadButton(failed));
-    else if (!done && state !== "off") row.append(slotButton(item, state, stem));
+    if (pending) row.append(reuploadButton(done));
+    else if (!done && state !== "off") row.append(slotButton(item, state));
     list.append(row);
   }
 }
 
-function slotButton(item, state, stem) {
+function slotButton(item, state) {
   const button = element("button", "small", "Şimdi üret");
   button.type = "button";
   button.addEventListener("click", () => {
     const early = state === "wait" ? ` Saati henüz gelmedi; video ${item.time} yerine şimdi çıkar.` : "";
     if (!confirm(`${item.time} · ${MODES[item.mode]} şimdi üretilip kanala yüklensin mi?${early}`)) return;
     guarded(button, async () => {
-      // Başarısız kaydı olan saat pipeline'da "bugün üretildi" sayılır; o zaman saat girdisi olmadan aynı tür üretilir
-      if (state === "bad") {
-        const inputs = item.prepared ? { script: `scripts/scheduled/${stem}.json`, upload: true }
-          : item.file === WORKFLOWS.short ? { mode: item.mode, upload: true } : { upload: true };
-        await client.dispatch(item.file, inputs);
-      } else {
-        await client.dispatch(item.file, { slot: item.slot });
-      }
+      await client.dispatch(item.file, { slot: item.slot });
       toast(`${item.time} videosu başlatıldı. ${item.mode === "longform" ? "Yaklaşık 25" : "Yaklaşık 8"} dakika içinde çıkar.`);
       setTimeout(refresh, 6000);
     });

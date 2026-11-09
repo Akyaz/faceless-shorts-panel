@@ -41,7 +41,7 @@ Yerelde denemek için: `python3 -m http.server 8791` ve `http://127.0.0.1:8791/`
 Panel, faceless-shorts deposunda şunlara dayanır:
 
 - `make-short.yml` iş akışının `mode`, `count`, `upload`, `script`, `script_json` ve `slot` girdileri; `weekly.yml` ve `longform.yml` iş akışlarının `upload` ve `slot` girdileri
-- `api.js`'deki `PLAN` listesi: `pipeline/slots.py`'deki saatlerle aynı olmalı
+- `api.js`'deki `PLAN` listesi: `pipeline/slots.py`'deki saatlerle aynı olmalı (`days`: yalnızca o günlerde görünen saatler; pazartesi burç videoları var, maç programı yok)
 - `scripts/scheduled/` klasörü: o güne hazırlanmış video (`.json`) ya da iptal (`.skip`)
 - `upload-video.yml` iş akışının `run_id` ve `privacy` girdileri
 - `YT_PRIVACY` depo değişkeni (`public` ya da `private`)

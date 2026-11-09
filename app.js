@@ -14,6 +14,9 @@ const MODES = {
   fact: "Biliyor muydun?",
   culture: "Magazin ve kültür-sanat",
   matchday: "Maç programı",
+  horoscope1: "Burç: Koç-Yengeç",
+  horoscope2: "Burç: Aslan-Akrep",
+  horoscope3: "Burç: Yay-Balık",
   sportstory: "Spor haberi",
   scheduled: "Önceden hazırlanmış video",
   custom: "Özel metin",
@@ -204,7 +207,7 @@ function renderPlan(feed, runs, scheduledFiles) {
   const list = $("plan");
   list.replaceChildren();
   for (const item of PLAN) {
-    if (item.sunday && now.getUTCDay() !== 0) continue;
+    if (item.days && !item.days.includes(now.getUTCDay())) continue;
     const stem = `${day}-${item.time.replace(":", "")}`;
     // 13:00 yalnızca o güne önceden hazırlanmış video varsa çalışır
     if (item.prepared && !files.has(`${stem}.json`)) continue;

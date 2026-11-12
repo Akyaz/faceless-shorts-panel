@@ -15,7 +15,7 @@ export const PLAN = [
   { time: "08:00", slot: "pazartesi 08:00", file: WORKFLOWS.short, mode: "horoscope1", days: [1] },
   { time: "08:30", slot: "pazartesi 08:30", file: WORKFLOWS.short, mode: "horoscope2", days: [1] },
   { time: "09:00", slot: "pazartesi 09:00", file: WORKFLOWS.short, mode: "horoscope3", days: [1] },
-  { time: "10:00", slot: "10:00", file: WORKFLOWS.short, mode: "story" },
+  { time: "10:00", slot: "10:00", file: WORKFLOWS.short, mode: "platform" },
   { time: "11:00", slot: "pazar 11:00", file: WORKFLOWS.weekly, mode: "weekly", days: [0] },
   { time: "12:00", slot: "12:00", file: WORKFLOWS.short, mode: "fact" },
   { time: "13:00", slot: "13:00", file: WORKFLOWS.short, mode: "scheduled", prepared: true },

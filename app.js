@@ -559,7 +559,21 @@ function start() {
   } else {
     show("settings");
   }
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator) {
+    // Yeni sürüm denetimi devraldığında sayfa bir kez yenilenir: eski app.js ile açık kalmasın
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      let reloaded = false;
+      try {
+        reloaded = Boolean(sessionStorage.getItem("sw-reloaded"));
+        sessionStorage.setItem("sw-reloaded", "1");
+      } catch {
+        // depolama kapalıysa da bir kez yenilemek yeter
+      }
+      if (hadController && !reloaded) location.reload();
+    });
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => reg.update()).catch(() => {});
+  }
 }
 
 start();

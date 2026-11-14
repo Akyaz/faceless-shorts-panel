@@ -3,7 +3,7 @@ import { unzip } from "./zip.js";
 
 const STORAGE_KEY = "faceless-shorts-panel";
 const MODES = {
-  story: "Gündem haberi",
+  story: "Gündem (Google'da en çok aranan)",
   world: "Dünya haberi (İngilizce)",
   trend: "Trend (bilim ve teknoloji)",
   digest: "Günün özeti",

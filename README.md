@@ -8,6 +8,7 @@
 - **Plan:** Bugünün yayın saatleri ve her saatin durumu (çıktı, bekliyor, kaçtı, başarısız, iptal, maç yok). "Şimdi üret" o saatin videosunu hemen üretip yükler; başarısız saatte üretilmiş ama yüklenememiş video varsa onu yeniden yükler.
 - **Üret:** Tür ve adet seçip video üretimini başlatır; haftalık derlemeyi başlatır.
 - **Metin:** Kendi yazdığın metinden video üretir (başlık, paragraflar, kaynak başlıklar, ülke ve görsel aramaları). Yazdıkların taslak olarak cihazda saklanır; "Formu temizle" hepsini siler.
+- **Önizle:** Yüklenmemiş videoyu (deneme ya da yüklenememiş video) YouTube yükleme hakkı harcamadan panelde oynatır; başlığı ve açıklamayı gösterir. Dosya GitHub'dan indirilip tarayıcıda açılır (`zip.js`); 14 gün saklanır.
 - **Yeniden yükle:** Üretilmiş ama yüklenememiş videoları (örneğin YouTube'un günlük sınırına takılanları) tek dokunuşla yeniden yükler.
 - **Anahtarlar:** Otomatik yayını durdurur ve başlatır; yeni videoların herkese açık ya da gizli yüklenmesini seçer.
 
@@ -45,4 +46,5 @@ Panel, faceless-shorts deposunda şunlara dayanır:
 - `scripts/scheduled/` klasörü: o güne hazırlanmış video (`.json`) ya da iptal (`.skip`)
 - `upload-video.yml` iş akışının `run_id` ve `privacy` girdileri
 - `YT_PRIVACY` depo değişkeni (`public` ya da `private`)
+- `make-short.yml` iş akışının `short` adlı yüklemesi (artifact): `short.mp4` ve `metadata.json`; ikinci video `2/` altında (önizleme bunu okur)
 - `panel-data` dalındaki `feed.json`: her çalışmanın sonunda `pipeline/report.py` tarafından eklenen kayıt

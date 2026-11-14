@@ -1,4 +1,5 @@
 import { ApiError, LONGFORM_WORKFLOW, PLAN, REUPLOAD_WORKFLOW, WORKFLOWS, createClient } from "./api.js";
+import { unzip } from "./zip.js";
 
 const STORAGE_KEY = "faceless-shorts-panel";
 const MODES = {
@@ -71,6 +72,7 @@ function explain(error) {
       return "Anahtarın bu işlem için izni yok. GitHub'da anahtarın izinlerinde Actions ve Variables \"Read and write\" olmalı.";
     }
     if (error.status === 404) return "Depo bulunamadı ya da anahtar bu depoyu göremiyor.";
+    if (error.status === 410) return error.message;
     return `GitHub hatası (${error.status}): ${error.message}`;
   }
   return "Bağlantı kurulamadı. İnternetini kontrol et.";
@@ -149,10 +151,70 @@ function renderFeed(feed) {
     // Video üretilmiş ama yüklenmemişse (YouTube'un günlük sınırı ya da bilerek yüklemeden üretilmiş) dosyası
     // duruyor demektir; aynı çalışma sonradan yüklendiyse düğme gösterilmez
     if (entry.videos.some((video) => !video.url) && !uploaded.has(String(entry.run))) {
-      item.append(reuploadButton(entry));
+      const actions = element("div", "actions");
+      // Tarih videolarının dosyası saklanmıyor; önizlenecek bir şey yok
+      if (!(entry.mode === "longform" && entry.script)) actions.append(previewButton(entry));
+      actions.append(reuploadButton(entry));
+      item.append(actions);
     }
     list.append(item);
   }
+}
+
+// ---------- önizleme: yüklenmemiş videoyu YouTube yükleme hakkı harcamadan panelde izlemek (14 Kasım 2026)
+
+function previewButton(entry) {
+  const button = element("button", "small", "Önizle");
+  button.type = "button";
+  button.addEventListener("click", () =>
+    guarded(button, async () => {
+      button.textContent = "İndiriliyor…";
+      try {
+        const files = await unzip(await client.artifactZip(entry.run));
+        openPreview(entry, files);
+      } finally {
+        button.textContent = "Önizle";
+      }
+    }),
+  );
+  return button;
+}
+
+// Birden çok video üreten çalışmada ilk video "short.mp4", sonrakiler "2/short.mp4", "3/short.mp4"...
+function packageFiles(files, index) {
+  const prefix = index === 0 ? "" : `${index + 1}/`;
+  return { video: files.get(`${prefix}short.mp4`), meta: files.get(`${prefix}metadata.json`) };
+}
+
+function openPreview(entry, files) {
+  const dialog = $("preview");
+  const body = $("preview-body");
+  const urls = [];
+  body.replaceChildren();
+  entry.videos.forEach((info, index) => {
+    const { video, meta } = packageFiles(files, index);
+    if (!video) return;
+    const url = URL.createObjectURL(new Blob([video], { type: "video/mp4" }));
+    urls.push(url);
+    const player = element("video");
+    // "#t=0.1": oynatmadan önce kapkara değil ilk kare görünsün (Safari)
+    Object.assign(player, { src: `${url}#t=0.1`, controls: true, playsInline: true, preload: "auto" });
+    body.append(element("h3", null, info.title), player);
+    if (meta) {
+      const data = JSON.parse(new TextDecoder().decode(meta));
+      body.append(element("pre", "description", data.description || ""));
+    }
+  });
+  if (!urls.length) {
+    toast("Pakette video bulunamadı.");
+    return;
+  }
+  dialog.onclose = () => {
+    body.querySelectorAll("video").forEach((player) => player.pause());
+    body.replaceChildren();
+    urls.forEach((url) => URL.revokeObjectURL(url));
+  };
+  dialog.showModal();
 }
 
 function reuploadButton(entry) {

@@ -325,3 +325,63 @@ nav button.active {
   color: #fff;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
 }
+
+/* Önizleme: yüklenmemiş deneme videosu panelde oynatılır */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+#preview {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+}
+
+#preview::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.preview-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+#preview-body {
+  padding: 12px 14px 16px;
+}
+
+#preview-body h3 {
+  margin: 4px 0 10px;
+  font-size: 16px;
+}
+
+#preview-body video {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  aspect-ratio: 9 / 16;
+  background: #000;
+  border-radius: 10px;
+}
+
+#preview-body .description {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 13px/1.45 inherit;
+  font-family: inherit;
+  color: var(--muted);
+}

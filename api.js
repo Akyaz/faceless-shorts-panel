@@ -114,6 +114,20 @@ export function createClient({ owner, repo, token }) {
       }
     },
 
+    // Çalışmanın ürettiği video paketi (iş akışındaki "short" yüklemesi, zip). Dosyalar 14 gün saklanır.
+    // İndirme adresi Azure'a yönlendirir; ikisi de tarayıcıdan indirmeye izin veriyor (14 Kasım 2026 sınandı)
+    async artifactZip(run, name = "short") {
+      const { artifacts } = await request("GET", `${base}/actions/runs/${run}/artifacts?name=${name}`);
+      const artifact = artifacts.find((item) => !item.expired);
+      if (!artifact) throw new ApiError(410, "Video dosyası yok ya da 14 günlük saklama süresi dolmuş.");
+      const response = await fetch(`${API}${base}/actions/artifacts/${artifact.id}/zip`, {
+        headers: { Authorization: `Bearer ${token}`, "X-GitHub-Api-Version": "2022-11-28" },
+        cache: "no-store",
+      });
+      if (!response.ok) throw new ApiError(response.status, response.statusText);
+      return response.arrayBuffer();
+    },
+
     // inputs değerleri GitHub'a metin olarak gider
     dispatch: (file, inputs = {}) =>
       request("POST", `${base}/actions/workflows/${file}/dispatches`, {

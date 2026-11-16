@@ -22,8 +22,10 @@ export const PLAN = [
   { time: "15:00", slot: "15:00", file: WORKFLOWS.short, mode: "fact" },
   { time: "17:00", slot: "17:00", file: WORKFLOWS.short, mode: "culture" },
   { time: "19:00", slot: "19:00", file: WORKFLOWS.short, mode: "sportstory" },
+  // 20:00: günlük uzun tarih videosu geri geldi (17 Kasım 2026)
+  { time: "20:00", slot: "20:00", file: LONGFORM_WORKFLOW, mode: "longform" },
   { time: "20:30", slot: "20:30", file: WORKFLOWS.short, mode: "debate" },
-  // 21:00: Google'da en çok aranan konunun haberi; tarih videosu ve pazar haftalık derlemesi takvimden çıktı (15 Kasım 2026)
+  // 21:00: Google'da en çok aranan konunun haberi; pazar haftalık derlemesi takvimden çıktı (15 Kasım 2026)
   { time: "21:00", slot: "21:00", file: WORKFLOWS.short, mode: "story" },
 ];
 
